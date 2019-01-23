@@ -1,0 +1,35 @@
+{
+	"name": "hablar-utils",
+	"version": "1.0.0",
+	"description": "Utilities to work with hablar.",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/secoya/hablar-utils"
+	},
+	"main": "lib/index.js",
+	"scripts": {
+		"build": "rm -rf lib/ && tsc",
+		"prepublishOnly": "rm -rf lib/ && tsc"
+	},
+	"bin": {
+		"hablar": "./bin/hablar"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"ast-types": "0.12.1",
+		"async-file": "^2.0.2",
+		"chokidar": "2.0.4",
+		"docopt": "0.6.2",
+		"hablar": "0.0.7",
+		"recast": "0.16.2",
+		"tslib": "1.9.3",
+		"yaml": "1.2.1"
+	},
+	"devDependencies": {
+		"@types/docopt": "0.6.31",
+		"@types/node": "10.12.18",
+		"@types/yaml": "1.0.1",
+		"typescript": "3.2.4"
+	}
+}
