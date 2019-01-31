@@ -6,7 +6,7 @@ import * as path from 'path';
 import parseText, { TextParserResult } from 'hablar/lib/parsers/text';
 import parseConstraint, { ConstraintParserResult } from 'hablar/lib/parsers/constraint';
 import TypeMap, { InferredType } from 'hablar/lib/type_map';
-import { analyzeTranslation, TypedTranslation as HablarTypedTranslation } from 'hablar/lib/analysis/combined';
+import { analyzeTranslations, TypedTranslation as HablarTypedTranslation } from 'hablar/lib/analysis/combined';
 import { emitTranslation } from 'hablar/lib/emitting/translation';
 import Context from 'hablar/lib/emitting/context';
 import { encodeIfStringFunction } from 'hablar/lib/emitting/helpers';
@@ -162,24 +162,6 @@ function getTypeMap(typeMaps: { [key: string]: TypeMap }, translationKey: string
 	return (typeMaps[translationKey] = new TypeMap());
 }
 
-function inferTypes(typeMaps: { [key: string]: TypeMap }, translations: Translation[]): TypedTranslation[] {
-	return translations.map(translation => {
-		const typeMap = getTypeMap(typeMaps, translation.translationKey);
-
-		if (translation.kind === TranslationKind.Simple) {
-			return {
-				translationKey: translation.translationKey,
-				translation: analyzeTranslation(translation.translationText, typeMap),
-			};
-		} else {
-			return {
-				translationKey: translation.translationKey,
-				translation: analyzeTranslation(translation.iterations, typeMap),
-			};
-		}
-	});
-}
-
 function compileFile(translations: TypedTranslation[], typeMaps: { [key: string]: TypeMap }): string {
 	const properties: PropertyKind[] = [];
 	const codeGenContext = new Context();
@@ -218,26 +200,67 @@ export async function compile(i18nFolder: string, compiledFolder: string): Promi
 
 	const fileNames = await fs.readdir(i18nFolder);
 
-	const translationFiles = await Promise.all(
+	const translationKeys: { [key: string]: { locale: string; translation: Translation }[] } = {};
+
+	await Promise.all(
 		fileNames
 			.filter(f => f.endsWith('.yml') && f !== 'meta.yml')
 			.map(async fileName => {
 				const translationFile = await readTranslationFile(path.join(i18nFolder, fileName));
-				return {
-					locale: fileName.substr(0, fileName.length - '.yml'.length),
-					translations: inferTypes(typeMaps, translationFile),
-				};
+				const locale = fileName.substr(0, fileName.length - '.yml'.length);
+				translationFile.forEach(translation => {
+					if (translationKeys[translation.translationKey] == null) {
+						translationKeys[translation.translationKey] = [];
+					}
+					translationKeys[translation.translationKey].push({
+						locale: locale,
+						translation: translation,
+					});
+				});
 			}),
 	);
 
-	Object.keys(typeMaps).forEach(key => {
-		typeMaps[key].freeze();
-	});
+	const analyzedTranslationFiles: { locale: string; translations: TypedTranslation[] }[] = [];
+
+	function getTranslationsForLocale(
+		map: { [locale: string]: TypedTranslation[] },
+		locale: string,
+	): TypedTranslation[] {
+		if (map[locale] == null) {
+			const translations: TypedTranslation[] = [];
+			analyzedTranslationFiles.push({ locale: locale, translations: translations });
+			map[locale] = translations;
+		}
+		return map[locale];
+	}
+
+	Object.keys(translationKeys).reduce(
+		(carry, trKey) => {
+			const parsedTranslations = translationKeys[trKey];
+			const typeMap = getTypeMap(typeMaps, trKey);
+			const hablarTranslations = parsedTranslations.map(t => {
+				if (t.translation.kind === TranslationKind.Simple) {
+					return t.translation.translationText;
+				} else {
+					return t.translation.iterations;
+				}
+			});
+			const analyzed = analyzeTranslations(hablarTranslations, typeMap);
+			parsedTranslations.forEach((parsedTr, idx) => {
+				getTranslationsForLocale(carry, parsedTr.locale).push({
+					translationKey: trKey,
+					translation: analyzed[idx],
+				});
+			});
+			return carry;
+		},
+		{} as { [locale: string]: TypedTranslation[] },
+	);
 
 	await fs.mkdirp(compiledFolder);
 	await compileHelper(compiledFolder);
 	await Promise.all(
-		translationFiles.map(file => {
+		analyzedTranslationFiles.map(file => {
 			const code = compileFile(file.translations, typeMaps);
 
 			return fs.writeFile(path.join(compiledFolder, file.locale + '.js'), code, 'utf8');
