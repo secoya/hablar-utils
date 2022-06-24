@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-
-var docopt = require('docopt').docopt;
-var compile = require('../lib/compilation').compile;
-var chokidar = require('chokidar');
+import { docopt } from 'docopt';
+import * as chokidar from 'chokidar';
+import { compile } from './compilation';
 
 var usage = [
 	'Hablar - you know, for speak.',
@@ -26,7 +25,7 @@ var usage = [
 	'Options:',
 	'  -w --watch    Watch for file changes',
 	'  -h --help     Show this help message',
-	'  --version     Show the version of this binary'
+	'  --version     Show the version of this binary',
 ].join('\n');
 
 var options = docopt(usage, { version: '1.0.0' });
@@ -35,6 +34,31 @@ function compileWithOptions() {
 	return compile(options['<i18nDirectory>'], options['<outputDirectory>']);
 }
 
+function go() {
+	if (running) {
+		compileWhenDone = true;
+		return;
+	}
+	running = true;
+	compileWithOptions()
+		.then(function () {
+			console.log('Compiled i18n files!');
+		})
+		.catch(function (err) {
+			console.error(err.message);
+		})
+		.then(function (err) {
+			running = false;
+			if (compileWhenDone) {
+				compileWhenDone = false;
+				go();
+			}
+		})
+		.catch(function (err) {
+			console.error(err.message);
+			process.exit(1);
+		});
+}
 if (!options['--watch']) {
 	compileWithOptions().catch(function (err) {
 		console.error(err.message);
@@ -43,27 +67,6 @@ if (!options['--watch']) {
 } else {
 	var compileWhenDone = false;
 	var running = false;
-	function go() {
-		if (running) {
-			compileWhenDone = true;
-			return;
-		}
-		running = true;
-		compileWithOptions().then(function () {
-			console.log('Compiled i18n files!');
-		}).catch(function (err) {
-			console.error(err.message);
-		}).then(function (err) {
-			running = false;
-			if (compileWhenDone) {
-				compileWhenDone = false;
-				go();
-			}
-		}).catch(function (err) {
-			console.error(err.message);
-			process.exit(1);
-		});
-	}
 	var watcher = chokidar.watch(options['<i18nDirectory>'], { ignored: /(^|[\/\\])\../ });
 	watcher.on('ready', function () {
 		watcher.on('add', go);

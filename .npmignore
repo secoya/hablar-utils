@@ -1,9 +1,0 @@
-src/
-typings/
-test/
-.vscode/
-.gitignore
-tsconfig.json
-tslint.json
-jest.config.js
-.prettierrc

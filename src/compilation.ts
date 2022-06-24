@@ -57,7 +57,7 @@ function mapTranslation(key: string, translation: any): Translation {
 		throw new Error('Invalid translation ' + key);
 	}
 
-	const iterations: ConstrainedTranslation[] = Object.keys(translation).map(key => {
+	const iterations: ConstrainedTranslation[] = Object.keys(translation).map((key) => {
 		const text = translation[key];
 
 		if (typeof text !== 'string') {
@@ -90,7 +90,7 @@ async function readTranslationFile(file: string): Promise<Translation[]> {
 
 	const translations: Translation[] = [];
 
-	Object.keys(parsed).forEach(key => {
+	Object.keys(parsed).forEach((key) => {
 		translations.push(mapTranslation(key, parsed[key]));
 	});
 
@@ -108,7 +108,7 @@ function mapTypeMap(key: string, typeMapEntry: any): TypeMap {
 		if (typeof typeMapEntry.parameters !== 'object') {
 			throw new Error('Invalid parameters entry');
 		}
-		Object.keys(typeMapEntry.parameters).forEach(paramName => {
+		Object.keys(typeMapEntry.parameters).forEach((paramName) => {
 			const param = typeMapEntry.parameters[paramName];
 
 			if (param == null) {
@@ -145,7 +145,7 @@ async function readTypeMapFile(file: string): Promise<{ [key: string]: TypeMap }
 
 	const typeMaps: { [key: string]: TypeMap } = {};
 
-	Object.keys(parsed).forEach(key => {
+	Object.keys(parsed).forEach((key) => {
 		typeMaps[key] = mapTypeMap(key, parsed[key]);
 	});
 
@@ -166,7 +166,7 @@ function compileFile(translations: TypedTranslation[], typeMaps: { [key: string]
 	const properties: PropertyKind[] = [];
 	const codeGenContext = new Context();
 
-	translations.forEach(translation => {
+	translations.forEach((translation) => {
 		const typeMap = getTypeMap(typeMaps, translation.translationKey);
 		const emitted = emitTranslation(translation.translation, codeGenContext, typeMap);
 
@@ -204,11 +204,11 @@ export async function compile(i18nFolder: string, compiledFolder: string): Promi
 
 	await Promise.all(
 		fileNames
-			.filter(f => f.endsWith('.yml') && f !== 'meta.yml')
-			.map(async fileName => {
+			.filter((f) => f.endsWith('.yml') && f !== 'meta.yml')
+			.map(async (fileName) => {
 				const translationFile = await readTranslationFile(path.join(i18nFolder, fileName));
 				const locale = fileName.substr(0, fileName.length - '.yml'.length);
-				translationFile.forEach(translation => {
+				translationFile.forEach((translation) => {
 					if (translationKeys[translation.translationKey] == null) {
 						translationKeys[translation.translationKey] = [];
 					}
@@ -234,33 +234,30 @@ export async function compile(i18nFolder: string, compiledFolder: string): Promi
 		return map[locale];
 	}
 
-	Object.keys(translationKeys).reduce(
-		(carry, trKey) => {
-			const parsedTranslations = translationKeys[trKey];
-			const typeMap = getTypeMap(typeMaps, trKey);
-			const hablarTranslations = parsedTranslations.map(t => {
-				if (t.translation.kind === TranslationKind.Simple) {
-					return t.translation.translationText;
-				} else {
-					return t.translation.iterations;
-				}
+	Object.keys(translationKeys).reduce((carry, trKey) => {
+		const parsedTranslations = translationKeys[trKey];
+		const typeMap = getTypeMap(typeMaps, trKey);
+		const hablarTranslations = parsedTranslations.map((t) => {
+			if (t.translation.kind === TranslationKind.Simple) {
+				return t.translation.translationText;
+			} else {
+				return t.translation.iterations;
+			}
+		});
+		const analyzed = analyzeTranslations(hablarTranslations, typeMap);
+		parsedTranslations.forEach((parsedTr, idx) => {
+			getTranslationsForLocale(carry, parsedTr.locale).push({
+				translationKey: trKey,
+				translation: analyzed[idx],
 			});
-			const analyzed = analyzeTranslations(hablarTranslations, typeMap);
-			parsedTranslations.forEach((parsedTr, idx) => {
-				getTranslationsForLocale(carry, parsedTr.locale).push({
-					translationKey: trKey,
-					translation: analyzed[idx],
-				});
-			});
-			return carry;
-		},
-		{} as { [locale: string]: TypedTranslation[] },
-	);
+		});
+		return carry;
+	}, {} as { [locale: string]: TypedTranslation[] });
 
 	await fs.mkdirp(compiledFolder);
 	await compileHelper(compiledFolder);
 	await Promise.all(
-		analyzedTranslationFiles.map(file => {
+		analyzedTranslationFiles.map((file) => {
 			const code = compileFile(file.translations, typeMaps);
 
 			return fs.writeFile(path.join(compiledFolder, file.locale + '.js'), code, 'utf8');
