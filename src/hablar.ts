@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import { docopt } from 'docopt';
 import * as chokidar from 'chokidar';
+import { docopt } from 'docopt';
 import { compile } from './compilation';
 
-var usage = [
+const DOC = [
 	'Hablar - you know, for speak.',
 	'The i18nDirectory should consist of one .yml file for every language you wish to provide translations for.',
 	'Each file should be a YAML map - mapping from a translation key to a translation in the hablar language.',
@@ -28,12 +28,14 @@ var usage = [
 	'  --version     Show the version of this binary',
 ].join('\n');
 
-var options = docopt(usage, { version: '1.0.0' });
+const options = docopt(DOC, { version: '1.0.0' });
 
 function compileWithOptions() {
 	return compile(options['<i18nDirectory>'], options['<outputDirectory>']);
 }
 
+let compileWhenDone = false;
+let running = false;
 function go() {
 	if (running) {
 		compileWhenDone = true;
@@ -41,34 +43,36 @@ function go() {
 	}
 	running = true;
 	compileWithOptions()
-		.then(function () {
+		.then(() => {
+			// tslint:disable:next-line no-console
 			console.log('Compiled i18n files!');
 		})
-		.catch(function (err) {
+		.catch((err) => {
+			// tslint:disable:next-line no-console
 			console.error(err.message);
 		})
-		.then(function (err) {
+		.then(() => {
 			running = false;
 			if (compileWhenDone) {
 				compileWhenDone = false;
 				go();
 			}
 		})
-		.catch(function (err) {
+		.catch((err) => {
+			// tslint:disable:next-line no-console
 			console.error(err.message);
 			process.exit(1);
 		});
 }
 if (!options['--watch']) {
-	compileWithOptions().catch(function (err) {
+	compileWithOptions().catch((err) => {
+		// tslint:disable:next-line no-console
 		console.error(err.message);
 		process.exit(1);
 	});
 } else {
-	var compileWhenDone = false;
-	var running = false;
-	var watcher = chokidar.watch(options['<i18nDirectory>'], { ignored: /(^|[\/\\])\../ });
-	watcher.on('ready', function () {
+	const watcher = chokidar.watch(options['<i18nDirectory>'], { ignored: /(^|[\/\\])\../ });
+	watcher.on('ready', () => {
 		watcher.on('add', go);
 		watcher.on('change', go);
 		go();

@@ -1,5 +1,10 @@
 export interface Context<SafeString extends { toString(): string }> {
 	/**
+	 * Gets the textual representation of the SafeString. In most cases this would simply call .toString()
+	 * on the instance.
+	 */
+	convertSafeString(val: SafeString): string;
+	/**
 	 * Encodes a string to make it safe to render in the wanted environment.
 	 * IE for web apps this should perform some kind of html encoding.
 	 */
@@ -9,11 +14,6 @@ export interface Context<SafeString extends { toString(): string }> {
 	 * value that has been decided to be safe to render without encoding.
 	 */
 	isSafeString(val: any): val is SafeString;
-	/**
-	 * Gets the textual representation of the SafeString. In most cases this would simply call .toString()
-	 * on the instance.
-	 */
-	convertSafeString(val: SafeString): string;
 
 	/**
 	 * Constructs a new safe string with the chosen text value.
@@ -21,9 +21,9 @@ export interface Context<SafeString extends { toString(): string }> {
 	makeSafeString(str: string): SafeString;
 }
 
-export type FunctionMap<SafeString extends { toString(): string }> = {
+export interface FunctionMap<SafeString extends { toString(): string }> {
 	[key: string]: (context: Context<SafeString>, val: any) => any;
-};
+}
 
 export class Translator<SafeString = any> {
 	private readonly context: Context<SafeString>;

@@ -1,16 +1,16 @@
-import * as fs from 'async-file';
 import T from 'ast-types';
-import * as yaml from 'yaml';
-import { prettyPrint } from 'recast';
-import * as path from 'path';
-import parseText, { TextParserResult } from 'hablar/lib/parsers/text';
-import parseConstraint, { ConstraintParserResult } from 'hablar/lib/parsers/constraint';
-import TypeMap, { InferredType } from 'hablar/lib/type_map';
+import { PropertyKind } from 'ast-types/gen/kinds';
+import * as fs from 'async-file';
 import { analyzeTranslations, TypedTranslation as HablarTypedTranslation } from 'hablar/lib/analysis/combined';
-import { emitTranslation } from 'hablar/lib/emitting/translation';
 import Context from 'hablar/lib/emitting/context';
 import { encodeIfStringFunction } from 'hablar/lib/emitting/helpers';
-import { PropertyKind } from 'ast-types/gen/kinds';
+import { emitTranslation } from 'hablar/lib/emitting/translation';
+import parseConstraint, { ConstraintParserResult } from 'hablar/lib/parsers/constraint';
+import parseText, { TextParserResult } from 'hablar/lib/parsers/text';
+import TypeMap, { InferredType } from 'hablar/lib/type_map';
+import * as path from 'path';
+import { prettyPrint } from 'recast';
+import * as yaml from 'yaml';
 
 const b = T.builders;
 
@@ -23,13 +23,13 @@ const enum TranslationKind {
 
 interface SimpleTranslation {
 	kind: TranslationKind.Simple;
-	translationText: TextParserResult;
 	translationKey: string;
+	translationText: TextParserResult;
 }
 
 interface ComplexTranslation {
-	kind: TranslationKind.Complex;
 	iterations: ConstrainedTranslation[];
+	kind: TranslationKind.Complex;
 	translationKey: string;
 }
 
@@ -47,32 +47,33 @@ function mapTranslation(key: string, translation: any): Translation {
 	if (typeof translation === 'string') {
 		return {
 			kind: TranslationKind.Simple,
-			translationText: parseText(translation),
 			translationKey: key,
+			translationText: parseText(translation),
 		};
 	}
 
 	if (typeof translation !== 'object' || translation === null) {
+		// tslint:disable:next-line no-console
 		console.error(translation);
 		throw new Error('Invalid translation ' + key);
 	}
 
-	const iterations: ConstrainedTranslation[] = Object.keys(translation).map((key) => {
-		const text = translation[key];
+	const iterations: ConstrainedTranslation[] = Object.keys(translation).map((k) => {
+		const text = translation[k];
 
 		if (typeof text !== 'string') {
-			throw new Error('Invalid translation ' + key);
+			throw new Error('Invalid translation ' + k);
 		}
 
 		return {
-			constraints: parseConstraint(key),
+			constraints: parseConstraint(k),
 			translation: parseText(text),
 		};
 	});
 
 	return {
-		kind: TranslationKind.Complex,
 		iterations: iterations,
+		kind: TranslationKind.Complex,
 		translationKey: key,
 	};
 }
@@ -247,8 +248,8 @@ export async function compile(i18nFolder: string, compiledFolder: string): Promi
 		const analyzed = analyzeTranslations(hablarTranslations, typeMap);
 		parsedTranslations.forEach((parsedTr, idx) => {
 			getTranslationsForLocale(carry, parsedTr.locale).push({
-				translationKey: trKey,
 				translation: analyzed[idx],
+				translationKey: trKey,
 			});
 		});
 		return carry;
