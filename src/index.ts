@@ -25,7 +25,7 @@ export interface FunctionMap<SafeString extends { toString(): string }> {
 	[key: string]: (context: Context<SafeString>, val: any) => any;
 }
 
-export class Translator<SafeString = any> {
+export class Translator<SafeString extends { toString(): string }> {
 	private readonly context: Context<SafeString>;
 	private readonly functions: FunctionMap<SafeString>;
 	private readonly translations: any;
