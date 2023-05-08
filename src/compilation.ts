@@ -1,5 +1,5 @@
-import T from 'ast-types';
-import { PropertyKind } from 'ast-types/gen/kinds';
+import * as T from 'ast-types';
+import type { PropertyKind } from 'ast-types/gen/kinds';
 import * as fs from 'async-file';
 import { analyzeTranslations, TypedTranslation as HablarTypedTranslation } from 'hablar/analysis/combined';
 import Context from 'hablar/emitting/context';
