@@ -177,7 +177,7 @@ function compileFile(translations: TypedTranslation[], typeMaps: { [key: string]
 	const objectExpr = b.objectExpression(properties);
 
 	const statements = [
-		b.importDeclaration([b.importSpecifier(codeGenContext.encodeIfStringExpr)], b.literal('./helper')),
+		b.importDeclaration([b.importSpecifier(codeGenContext.encodeIfStringExpr)], b.literal('./helper.js')),
 		b.exportNamedDeclaration(
 			b.variableDeclaration('const', [b.variableDeclarator(b.identifier('translations'), objectExpr)]),
 		),
