@@ -5,7 +5,7 @@
 		"type": "git",
 		"url": "https://github.com/secoya/hablar-utils"
 	},
-	"main": "lib/index.js",
+	"main": "./index.js",
 	"scripts": {
 		"build": "tools/build.sh"
 	},
