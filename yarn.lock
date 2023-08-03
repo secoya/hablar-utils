@@ -23,7 +23,7 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@orbit-online/git-release@0.2.1", "@orbit-online/git-release@^0.2.0":
+"@orbit-online/git-release@^0.2.0":
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/@orbit-online/git-release/-/git-release-0.2.1.tgz#2ac61cd8dc4a353c27d99eef3b8e79d0cf3adfcd"
   integrity sha512-xDCv1ElHxHkaEh31OPj5rKZ6T9isKy9XbHAeERVQpEoeCHehZFJOF0JhODJpiCYudzS83005GDrQ3EEhFC+vdA==
