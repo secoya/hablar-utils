@@ -23,11 +23,6 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@orbit-online/git-release@^0.2.0":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@orbit-online/git-release/-/git-release-0.2.1.tgz#2ac61cd8dc4a353c27d99eef3b8e79d0cf3adfcd"
-  integrity sha512-xDCv1ElHxHkaEh31OPj5rKZ6T9isKy9XbHAeERVQpEoeCHehZFJOF0JhODJpiCYudzS83005GDrQ3EEhFC+vdA==
-
 "@secoya/typescript-scope-analysis@1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@secoya/typescript-scope-analysis/-/typescript-scope-analysis-1.0.4.tgz#2e9a31c79826590fc67e32be8ae4ffc2e951eb98"
@@ -579,12 +574,11 @@ tslint-react@3.6.0:
   dependencies:
     tsutils "^2.13.1"
 
-tslint-secoya@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/tslint-secoya/-/tslint-secoya-2.3.0.tgz#52973ff245f6ec73b6d037b8cd6f3b9641d9a55a"
-  integrity sha512-tEb18jqPrkjxUFbp/S4kgd2fhb15biZ25W2WuK/o1auWFgGzNN8E+w+t3Ku/7LB2sElDx1AgDV6VjcrTpC6E7w==
+tslint-secoya@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/tslint-secoya/-/tslint-secoya-2.3.1.tgz#28d50e5e1ce9798f3fad9da9b9a94622943a20d5"
+  integrity sha512-0BrIgG+YSPIEhF4TztvN4yxPSjyXs2Qc6/WsixvFsHWexwlSH68ekMZYDp3vqF/H1V3bulHA/lLOWFq8JJ7eLQ==
   dependencies:
-    "@orbit-online/git-release" "^0.2.0"
     "@secoya/typescript-scope-analysis" "1.0.4"
     tslint-microsoft-contrib "5.2.1"
     tslint-react "3.6.0"
