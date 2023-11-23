@@ -22,7 +22,7 @@ export interface Context<SafeString extends { toString(): string }> {
 }
 
 export interface FunctionMap<SafeString extends { toString(): string }> {
-	[key: string]: (context: Context<SafeString>, val: any) => any;
+	[key: string]: (context: Context<SafeString>, ...parameters: any) => any;
 }
 
 export class Translator<SafeString extends { toString(): string }> {
